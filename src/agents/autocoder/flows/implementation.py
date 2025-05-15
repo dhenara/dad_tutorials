@@ -21,12 +21,6 @@ from dhenara.ai.types import (
 from src.agents.autocoder.types import TaskImplementation
 
 
-
-# Initially, we will hard code the task_description,
-# but later we will use DAD's strong template system to accept it live
-task_description = "Update the README file with relevant content"
-#task_description = "Your Task description"
-
 # Parent of the repo where we analyse the folders
 global_data_directory = "$var{run_root}/global_data"
 
@@ -38,33 +32,8 @@ implementation_flow = FlowDefinition()
 implementation_flow.node(
     "dynamic_repo_analysis",
     FolderAnalyzerNode(
-        # pre_events=[EventType.node_input_required],
-        settings=FolderAnalyzerSettings(
-            base_directory=global_data_directory,
-            operations=[
-                FolderAnalysisOperation(
-                    operation_type="analyze_folder",
-                    path="dhenara_docs/docs",
-                    content_read_mode="none", # No content
-                ),
-                FolderAnalysisOperation(
-                    operation_type="analyze_folder",
-                    path="dhenara_docs/docs/dhenara-agent/getting-started",
-                    content_read_mode="full", #With full content
-                ),
-                FolderAnalysisOperation(
-                    operation_type="analyze_file",
-                    path="dhenara_docs/docs/dhenara-ai/introduction.md",
-                    content_read_mode="full", #With full content
-                ),
-                FolderAnalysisOperation(
-                    operation_type="analyze_file",
-                    path="dhenara_docs/docs/dhenara-agent/introduction.md",
-                    content_read_mode="full", #With full content
-                ),
-
-            ],
-        ),
+        pre_events=[EventType.node_input_required],
+        settings=None,
     ),
 )
 
@@ -72,9 +41,9 @@ implementation_flow.node(
 implementation_flow.node(
     "code_generator",
     AIModelNode(
-        #pre_events=[EventType.node_input_required],
+        pre_events=[EventType.node_input_required],
         settings=AIModelNodeSettings(
-            models=["claude-3-7-sonnet"],
+            models=["claude-3-7-sonnet","o4-mini", "gemini-2.0-flash"],
             system_instructions=[
                 # Role and Purpose
                 "You are a professional code implementation agent specialized in executing precise file operations.",
@@ -100,7 +69,7 @@ implementation_flow.node(
             prompt=Prompt.with_dad_text(
                 text=(
                     "## Task Description\n"
-                    f"{task_description}"
+                    "$var{task_description}"
                     "## Repository Context\n"
                     "$expr{$hier{dynamic_repo_analysis}.outcome.results}\n\n"
                     "## Implementation Requirements\n"
@@ -113,7 +82,7 @@ implementation_flow.node(
             ),
             model_call_config=AIModelCallConfig(
                 structured_output=TaskImplementation,
-                test_mode=False, # Disable Test Mode, or delete this line as its disabled by default
+                test_mode=False,
                 max_output_tokens=64000,
                 max_reasoning_tokens=4000,
                 reasoning=True,
