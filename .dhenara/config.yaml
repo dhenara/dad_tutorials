@@ -1,0 +1,9 @@
+project:
+  name: dev_agents
+  identifier: dev_agents
+  description: ''
+  version: 0.0.1
+metadata:
+  created_at: '2025-05-14T19:47:34.827148'
+  updated_at: '2025-05-14T19:47:34.827160'
+settings: {}

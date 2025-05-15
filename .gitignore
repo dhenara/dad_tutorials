@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Credentials
+.dhenara/.secrets/
+
+# Agent Runs
+runs/
+
+# Logs
+*.log
+
+# OS specific
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
