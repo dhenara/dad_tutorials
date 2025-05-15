@@ -1,4 +1,5 @@
 # ruff: noqa: E501
+import json
 from dhenara.agent.dsl import (
     PLACEHOLDER,
     AIModelNode,
@@ -18,24 +19,54 @@ from dhenara.ai.types import (
     Prompt,
 )
 
-from src.agents.autocoder.types import TaskImplementation
+from src.agents.autocoder.types import TaskImplementation,TaskSpecWithFolderAnalysisOps
 
 
 # Parent of the repo where we analyse the folders
 global_data_directory = "$var{run_root}/global_data"
 
+
+def read_description():
+    with open("src/common/live_prompts/autocoder/task_description.md") as file:
+        return file.read()
+
+
+def read_task_spec_json():
+    with open("src/common/live_prompts/autocoder/task_spec.json") as file:
+        spec_dict = json.load(file)
+        spec = TaskSpecWithFolderAnalysisOps(**spec_dict)
+
+        # Update the placeholder description in `task_spec.json` with the `task_description.md` file content
+        _task_description = read_description()
+        spec.description = _task_description
+        return spec
+
+
+task_spec = read_task_spec_json()
+
 # Create a FlowDefinition
 implementation_flow = FlowDefinition()
+
+implementation_flow.vars(
+    {
+        "task_spec": task_spec,
+    }
+)
+
 
 
 # 1. Dynamic Folder Analysis
 implementation_flow.node(
     "dynamic_repo_analysis",
     FolderAnalyzerNode(
-        pre_events=[EventType.node_input_required],
-        settings=None,
+        # pre_events=[EventType.node_input_required],
+        settings=FolderAnalyzerSettings(
+            base_directory=global_data_directory,
+            operations_template=ObjectTemplate(expression="$expr{task_spec.required_context}"),
+        ),
     ),
 )
+
 
 # 2. Code Generation Node
 implementation_flow.node(
@@ -68,8 +99,9 @@ implementation_flow.node(
             ],
             prompt=Prompt.with_dad_text(
                 text=(
-                    "## Task Description\n"
-                    "$var{task_description}"
+                    "Task Specification\n"
+                    "Task ID: $expr{task_spec.task_id}\n"
+                    "Description: $expr{task_spec.description}\n\n"
                     "## Repository Context\n"
                     "$expr{$hier{dynamic_repo_analysis}.outcome.results}\n\n"
                     "## Implementation Requirements\n"

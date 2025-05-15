@@ -14,8 +14,8 @@ async def node_input_event_handler(event: NodeInputRequiredEvent):
             node_input = await get_ai_model_node_input(
                 node_def_settings=event.node_def_settings,
             )
-            task_description= await async_input("Enter your query: ")
-            node_input.prompt_variables = {"task_description": task_description}
+            #task_description= await async_input("Enter your query: ")
+            #node_input.prompt_variables = {"task_description": task_description}
 
         event.input = node_input
         event.handled = True

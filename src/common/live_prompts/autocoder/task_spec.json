@@ -1,0 +1,18 @@
+{
+    "order": 1,
+    "task_id": "singleshot_task",
+    "description": "No description as it should be read from file",
+    "required_context": [
+        {
+            "operation_type": "analyze_folder",
+            "path": "dhenara_docs/docs",
+            "content_read_mode": "none",
+            "additional_gitignore_paths": null
+        },
+        {
+            "operation_type": "analyze_file",
+            "path": "dhenara_docs/sidebars.ts",
+            "content_read_mode": "full"
+        }
+    ]
+}
